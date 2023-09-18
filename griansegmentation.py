@@ -44,7 +44,8 @@ class MyBar(QtWidgets.QWidget):
             height_title = width_title / 1.68
             ratio_title = ratio_width_title
         height_title = height_title / 20
-
+        height_title=int(height_title)
+        width_title=int(width_title)
         # 窗口栏图标
         self.title_icon = QPushButton()
         self.title_icon.setStyleSheet('''QPushButton{background:#6FAFBB;border:0px}''')
@@ -233,6 +234,8 @@ class MainWindow(QtWidgets.QWidget):
         else:
             self.image_height = self.image_height + 1
         self.image_width = int(self.image_height * (4 / 3))
+        self.height_window=int(self.height_window)
+        self.width_window=int(self.width_window)
 
         # 实际窗口大小与默认窗口大小比值
         self.ratio_pixel = self.image_width * self.image_height / (936 * 702)
@@ -243,7 +246,7 @@ class MainWindow(QtWidgets.QWidget):
             "QLabel{background:white;font-size:%dpx;font-family:Times New Roman;font-weight:500;}" % int(30 * self.ratio_window))
         self.display_image_box.setAlignment(QtCore.Qt.AlignCenter)
         self.display_image_box.setFixedSize(self.image_width, self.image_height)
-        self.display_image_box.move(1, (self.height_window / 20))
+        self.display_image_box.move(1, int(self.height_window / 20))
 
         self.display_image = QLabel(self.display_image_box)
         self.display_image.setStyleSheet("QLabel{background:transparent;}")
@@ -266,7 +269,7 @@ class MainWindow(QtWidgets.QWidget):
         self.windowbox.setStyleSheet("QLabel{background:transparent;}")
         self.windowbox.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.windowbox.setFrameShadow(QtWidgets.QFrame.Plain)
-        self.windowbox.setFixedSize(self.width_window, self.height_window)
+        self.windowbox.setFixedSize(int(self.width_window),int( self.height_window))
         self.windowbox.move(0, 0)
 
         # 红色方框
@@ -292,9 +295,9 @@ class MainWindow(QtWidgets.QWidget):
             "QHeaderView::section{background-color:white;font-size:%dpx;font-family:Times New Roman;color: black;}" % int(16 * self.ratio_window))
         self.tableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.tableView.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
-        self.tableView.setGeometry(self.width_window - 301 * self.ratio_window - 3, self.height_window / 20, 301 * self.ratio_window,
-                                        300 * self.ratio_window)
-
+        self.tableView.setGeometry(int(self.width_window - 301 * self.ratio_window - 3), self.height_window // 20, int(301 * self.ratio_window),
+                                        int(300 * self.ratio_window))
+        self.ratio_window=int(self.ratio_window)
         self.group_result = QLabel(self)
         self.group_result.setStyleSheet("QLabel{background:white}")
         self.group_result.setGeometry(self.width_window - 301 * self.ratio_window - 2, 350 * self.ratio_window, 300 * self.ratio_window, 160 * self.ratio_window)
@@ -595,8 +598,8 @@ class MainWindow(QtWidgets.QWidget):
         self.show_number_counter.setHidden(1)
 
         self.setFixedSize(self.width_window, self.height_window)
-        self.move((self.available_rect.width() - self.width_window) / 2,
-                  (self.available_rect.height() - self.height_window) / 2)
+        self.move((self.available_rect.width() - self.width_window) // 2,
+                  (self.available_rect.height() - self.height_window) // 2)
         self.setWindowIcon(QIcon("%s/icon/window.ico" % path_icon))
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         palette = QtGui.QPalette()
@@ -783,6 +786,7 @@ class MainWindow(QtWidgets.QWidget):
 
     # 从文件夹获取图像
     def openimage(self):
+        print('openimage')
         with open("path_openimage.txt", "r") as f:
             data = f.readline()
         if data:
@@ -1198,6 +1202,7 @@ class MainWindow(QtWidgets.QWidget):
 
     def findshapefactor(self, binary):
         # 基于形状因子判定种子形状
+        print('findshapefactor')
         contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         list_grainarea = []
         list_grainArea = []
@@ -1240,6 +1245,7 @@ class MainWindow(QtWidgets.QWidget):
 
     def findratioarea(self, binary):
         # 基于面积比寻找粘连区域
+        print('findratioarea')
         contours, hierarchy = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
         list_grainArea = []
         list_convexArea = []
@@ -1261,6 +1267,7 @@ class MainWindow(QtWidgets.QWidget):
         return contours, hierarchy, list_ratioArea, list_grainArea
 
     def shapeFactorAndArea(self, list, way):
+        print('shapeFactorAndArea has kmeans')
         list.sort()
         for i in range(len(list)):
             list[i] = round(list[i], 2)
@@ -1288,6 +1295,7 @@ class MainWindow(QtWidgets.QWidget):
         return np.mean(list_single)
 
     def watershed(self, binary, factor_distance):
+        print('watershed')
         binary_BGR = cv2.cvtColor(binary, cv2.COLOR_GRAY2BGR)
         dist_watershed = cv2.distanceTransform(binary, cv2.DIST_L2, 5)
         ret, foreground = cv2.threshold(dist_watershed, dist_watershed.max() * factor_distance, 255, cv2.THRESH_BINARY)
@@ -1303,6 +1311,7 @@ class MainWindow(QtWidgets.QWidget):
         return binary
 
     def segmentation(self, binary, factor_distance_1, factor_distance_2, ratioarea, factor):
+        print('segmentation')
         binary_seg = np.zeros(binary.shape, dtype=np.uint8)
         for i in (factor_distance_1, factor_distance_2):
             binary_seg_watershed = self.watershed(binary, i / 10)
@@ -1339,6 +1348,7 @@ class MainWindow(QtWidgets.QWidget):
         return binary_seg, binary_adhesion_watershed
 
     def segmentation_next(self, binary_adhesion, contours_adhesion):
+        print('segmentation_next')
         binary_adhesion_next = np.zeros((binary_adhesion.shape[0], binary_adhesion.shape[1]), np.uint8)
         for i in range(0, len(contours_adhesion)):
             binary_adhesion_Single = np.zeros((binary_adhesion.shape[0], binary_adhesion.shape[1]), np.uint8)
@@ -1519,6 +1529,7 @@ class MainWindow(QtWidgets.QWidget):
         return binary_adhesion_next
 
     def findThreshold(self, binary):
+        print('findThreshold')
         array_1D = binary.ravel()
         se = pd.Series(array_1D)
         grayvalue_counts = dict(se.value_counts(sort=False))
@@ -1566,6 +1577,7 @@ class MainWindow(QtWidgets.QWidget):
 
     def process_overseg(self, binary_seg, way):
         # 分割后异常值籽粒（过分割）处理
+        print('process_overseg')
         contours_error, _, list_ratioArea_error, list_grainArea_error = self.findratioarea(binary_seg)
         binary_seg_Error = np.zeros((binary_seg.shape[0], binary_seg.shape[1]), np.uint8)
         binary_seg_Right = np.zeros((binary_seg.shape[0], binary_seg.shape[1]), np.uint8)
@@ -1693,6 +1705,7 @@ class MainWindow(QtWidgets.QWidget):
 
     # 叶片参数与虫洞获取
     def processing(self, image):
+        print('here')
         self.button_saveimage.setEnabled(False)
         self.button_setting.setEnabled(False)
         self.button_manual.setEnabled(False)
