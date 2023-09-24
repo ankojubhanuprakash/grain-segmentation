@@ -153,7 +153,7 @@ class MainWindow(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
 
-        # 参数初始化
+        # Parameter initialization
         self.trigger_camera = 0
         self.trigger_camera_initial = 1
         self.trigger_image = 0
@@ -201,9 +201,9 @@ class MainWindow(QtWidgets.QWidget):
 
         self.initUI()
 
-    # 创建控件函数
+    # Create control function
     def initUI(self):
-        # 获取屏幕尺寸，使窗口自适应屏幕，默认窗口大小1260 * 750
+        # Get the screen size and make the window adapt to the screen. The default window size is 1260 * 750
         self.desktop = QtWidgets.QApplication.desktop()
         self.available_rect = self.desktop.availableGeometry()
         self.width_window = self.available_rect.width()
@@ -211,7 +211,7 @@ class MainWindow(QtWidgets.QWidget):
         self.ratio_width_window = self.width_window / 1260
         self.ratio_height_window = self.height_window / 750
 
-        # 窗口尺寸设定
+        # Window size setting
         if self.ratio_width_window >= self.ratio_height_window:
             self.height_window = self.available_rect.height()
             self.width_window = self.height_window * 1.68
@@ -221,11 +221,11 @@ class MainWindow(QtWidgets.QWidget):
             self.height_window = self.width_window / 1.68
             self.ratio_window = self.ratio_width_window
 
-        # 图像显示区域尺寸设定
+        # Image display area size setting
         self.height_display_image = self.height_window * 19 / 20
         self.width_display_image = self.height_display_image * 4 / 3
 
-        # 图像尺寸设定
+        # Image size settings
         self.image_height = ceil(self.height_display_image) - 1
         if self.image_height % 3 == 0:
             self.image_height = self.image_height
@@ -237,10 +237,10 @@ class MainWindow(QtWidgets.QWidget):
         self.height_window=int(self.height_window)
         self.width_window=int(self.width_window)
 
-        # 实际窗口大小与默认窗口大小比值
+        # Ratio of actual window size to default window size
         self.ratio_pixel = self.image_width * self.image_height / (936 * 702)
 
-        # 图片显示区域容器
+        # Image display area container
         self.display_image_box = QLabel(self)
         self.display_image_box.setStyleSheet(
             "QLabel{background:white;font-size:%dpx;font-family:Times New Roman;font-weight:500;}" % int(30 * self.ratio_window))
@@ -264,7 +264,7 @@ class MainWindow(QtWidgets.QWidget):
         self.display_processing.move(int(self.width_display_image * 3 / 8), int(self.height_display_image * 7 / 16))
         self.display_processing.setHidden(True)
 
-        # 外围方框
+        # outer box
         self.windowbox = QLabel(self)
         self.windowbox.setStyleSheet("QLabel{background:transparent;}")
         self.windowbox.setFrameShape(QtWidgets.QFrame.StyledPanel)
@@ -272,7 +272,7 @@ class MainWindow(QtWidgets.QWidget):
         self.windowbox.setFixedSize(int(self.width_window),int( self.height_window))
         self.windowbox.move(0, 0)
 
-        # 红色方框
+        # Red frame
         self.widthRatio = 1
         self.heightRatio = 1
 
@@ -588,7 +588,7 @@ class MainWindow(QtWidgets.QWidget):
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.addStretch(-1)
 
-        # 显示轮廓序号
+        # Show outline number
         self.show_number_counter = QLabel(self)
         self.show_number_counter.setStyleSheet(
             "QLabel{color:blue;background:white;font-size:%dpx;font-weight:500;font-family:Times New Roman;}" % int(
@@ -1719,7 +1719,7 @@ class MainWindow(QtWidgets.QWidget):
             self.kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
             channel_B, _, _ = cv2.split(image)
 
-            # 判断背景颜色
+            # Determine the Background Color
             _, binary_background = cv2.threshold(channel_B, 100, 255, cv2.THRESH_BINARY_INV)
 
             if self.widthRatio == -1 or self.widthRatio == 1:
@@ -1861,7 +1861,8 @@ class MainWindow(QtWidgets.QWidget):
                 else:
                     binary_seg = binary_single
 
-                # 分割后异常值籽粒（未分割）处理
+                # Processing of outlier kernels after segmentation (unsplit)
+
                 binary_seg = cv2.morphologyEx(binary_seg, cv2.MORPH_OPEN, self.kernel)
                 binary_seg_error = np.zeros((binary_seg.shape[0], binary_seg.shape[1]), np.uint8)
                 contours, _,list_ratioarea, list_grainarea = self.findratioarea(binary_seg)
@@ -2080,7 +2081,7 @@ class MainWindow(QtWidgets.QWidget):
             self.num_contours += randint(0, 9)
 
         try:
-            # 获取种子平均参数
+            # Obtain Seed Average Parameters
             self.list_area_singleGrain = []
             self.list_perimeter_singleGrain = []
             self.list_length_singleGrain = []

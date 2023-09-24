@@ -1,1 +1,1 @@
-C:/PythonLN/grainimg/paper/newnewtu9/2.bmp
+D:/indosaw/2d/grain-segmentation/sample/1.Bmp
