@@ -899,7 +899,7 @@ class MainWindow(QtWidgets.QWidget):
                 pass
             print('cp2')
             ### indosaw
-            self.image_open =  cv2.imread(self.imageName, cv2.IMREAD_GRAYSCALE)
+            self.image_open =  cv2.imread(self.imageName, )
             
             # cv2.imdecode(np.fromfile(self.imageName, dtype=np.uint8), -1)
             
@@ -907,7 +907,7 @@ class MainWindow(QtWidgets.QWidget):
             self.image_open_display = cv2.resize(self.image_open_display, (self.image_width, self.image_height))
             print('cp3')
             self.image_show = QtGui.QImage(self.image_open_display.data, self.image_open_display.shape[1],
-                                           self.image_open_display.shape[0], QtGui.QImage.Format_Grayscale8)
+                                           self.image_open_display.shape[0], QtGui.QImage.Format_BGR888)#Format_BGR888
             self.display_image.setPixmap(QtGui.QPixmap.fromImage(self.image_show))
             self.display_image.move(0,0)
             print('cp4')
@@ -1352,6 +1352,9 @@ class MainWindow(QtWidgets.QWidget):
                             cv2.drawContours(binary_adhesion_watershed, [contours[i]], 0, 0, -1)
                     else:
                         pass
+            
+            #showimg(binary_adhesion_watershed)
+            
 
             binary = cv2.dilate(binary_adhesion_watershed, self.kernel)
             binary_seg = cv2.add(binary_single_watershed, binary_seg)
@@ -1731,12 +1734,14 @@ class MainWindow(QtWidgets.QWidget):
             ####indosaw
             #channel_B, _, _ = cv2.split(image)
             
-            channel_B = image
+            #channel_B = image
+            channel_B=cv2.imread(self.imageName, cv2.IMREAD_GRAYSCALE)
+
             print(self.imageName)
             ### indosaw
             # Determine the Background Color
             _, binary_background = cv2.threshold(channel_B, 100, 255, cv2.THRESH_BINARY_INV)
-            print(self.widthRatio)
+            print('width ratio',self.widthRatio)
             if self.widthRatio == -1 or self.widthRatio == 1:
                 thre = self.findThreshold(channel_B)
             else:
@@ -1758,6 +1763,7 @@ class MainWindow(QtWidgets.QWidget):
                     pass
 
             area_max = 0
+            print('width ratio',self.widthRatio,'height ratio',self.heightRatio)
             contours, _ = cv2.findContours(binary_background, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
             for i in range(1, len(contours)):
                 area = cv2.contourArea(contours[i])
@@ -1770,13 +1776,17 @@ class MainWindow(QtWidgets.QWidget):
 
             # Red box screenshot
             if self.widthRatio == 1 and self.heightRatio == 1:
+                print('Red box screenshot if')
                 pass
             else:
+                print('Red box screenshot else')
                 try:
+                    print(y1,y2,x1,x2)
                     binary_mask = np.zeros((binary.shape[0], binary.shape[1]), np.uint8)
                     binary_mask[y1 : y2, x1 : x2] = 255
                     binary = cv2.bitwise_and(binary, binary_mask)
                 except:
+                    print('xy var not found')
                     pass
 
             # Remove small noise points
@@ -1786,7 +1796,7 @@ class MainWindow(QtWidgets.QWidget):
                 area = cv2.contourArea(contours[i])
                 if area <= 50:
                     cv2.drawContours(binary, [contours[i]], -1, 0, -1)
-
+            
             if self.grainModel == 0:
                 binary_seg_shape = binary.copy()
                 binary_seg_shape = self.watershed(binary_seg_shape, 0.3)
@@ -1798,7 +1808,7 @@ class MainWindow(QtWidgets.QWidget):
                     for i in range(len(list_grainArea_shape)):
                         if list_grainArea_shape[i] <= 0.1 * np.mean(list_grainArea_shape):
                             cv2.drawContours(binary_seg_shape, [contours_shape[i]], 0, 0, -1)
-
+                
                 _, list_shapeFactor_checkshape, list_grainArea, self.longEdge, self.shortEdge = self.findshapefactor(binary_seg_shape)
                 self.shapeFactor_checkshape = self.shapeFactorAndArea(list_shapeFactor_checkshape,0)
                 self.area_checkshape = self.shapeFactorAndArea(list_grainArea,1)
@@ -1814,7 +1824,7 @@ class MainWindow(QtWidgets.QWidget):
                     for i in range(len(list_ratioArea)):
                         if list_ratioArea[i] <= 0.95 and list_grainArea[i] >= 1.2 * self.area_checkshape:
                             cv2.drawContours(binary_single, [contours[i]], 0, 0, -1)
-
+                #showimg(binary_single)
                 binary_adhesion_first = cv2.bitwise_xor(self.binary_erode, binary_single)
                 contours, hierarchy = cv2.findContours(binary_adhesion_first, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
                 print('1820')
@@ -1881,6 +1891,9 @@ class MainWindow(QtWidgets.QWidget):
                 print('Processing of outlier kernels after segmentation (unsplit)')
                 binary_seg = cv2.morphologyEx(binary_seg, cv2.MORPH_OPEN, self.kernel)
                 binary_seg_error = np.zeros((binary_seg.shape[0], binary_seg.shape[1]), np.uint8)
+                ##indosaw -start
+                #showimg(binary_seg_error)
+                ## indosaw -end
                 contours, _,list_ratioarea, list_grainarea = self.findratioarea(binary_seg)
                 for i in range(len(list_ratioarea)):
                     if (1 - list_ratioarea[i]) * list_grainarea[i] >= 0.1 * self.area_checkshape:
@@ -1910,7 +1923,7 @@ class MainWindow(QtWidgets.QWidget):
 
                 binary_seg = self.process_overseg(binary_seg, 1)
                 binary_seg= cv2.bitwise_and(binary, binary_seg)
-
+                #showimg(binary_seg)
                 num_noseg = 2
                 print('1914')
                 while num_noseg != 0:
@@ -1987,6 +2000,7 @@ class MainWindow(QtWidgets.QWidget):
                 binary_loss = cv2.morphologyEx(binary_loss, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)))
                 binary_loss = cv2.morphologyEx(binary_loss, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)))
                 contours_loss, _, list_ratioArea_loss, list_grainArea_loss = self.findratioarea(binary_loss)
+                
                 for i in range(len(contours_loss)):
                     grainarea = cv2.contourArea(contours_loss[i])
                     if grainarea <= 0.3 * self.area_checkshape:
@@ -1997,12 +2011,21 @@ class MainWindow(QtWidgets.QWidget):
                 self.list_normal = []
                 self.list_abnormal = []
                 self.contours_final, _, self.list_ratioArea_final, self.list_grainArea_final = self.findratioarea(binary_seg)
-                print(2000)
-                print(type(self.contours_final),type(self.list_ratioArea_final),type(self.list_grainArea_final))
+                
+                #print(2000,len(self.contours_final),len(self.list_ratioArea_final),len(self.list_grainArea_final))
+                #print(type(binary_seg))
+                #np.save('bin_seg',binary_seg)
+                #print(type(self.contours_final),type(self.list_ratioArea_final),type(self.list_grainArea_final),len(contours_loss))
+                self.contours_final = list(self.contours_final)
                 for i in range(len(contours_loss)):
+                    #print('bharath')
                     self.contours_final.append(contours_loss[i])
+                    #print(type(self.contours_final),type(contours_loss[i]),)
+                    #return
                     self.list_ratioArea_final.append(list_ratioArea_loss[i])
+                    #print(2)
                     self.list_grainArea_final.append(list_grainArea_loss[i])
+                self.contours_final = tuple(self.contours_final)
                 print(2005)
                 self.num_contours = len(self.contours_final)
                 list_area_calibration_pixel = []
@@ -2055,11 +2078,11 @@ class MainWindow(QtWidgets.QWidget):
                     self.contours_normal.append(self.contours_final[i])
                 for i in self.list_abnormal:
                     self.contours_abnormal.append(self.contours_final[i])
-
+            #showimg(self.image_contour)
             self.image_count = cv2.resize(self.image_contour, (self.image_width, self.image_height))
-            print('2058')
+            print('2058',type(self.image_count))
             self.image_show = QtGui.QImage(self.image_count.data, self.image_count.shape[1], self.image_count.shape[0],
-                                           QtGui.QImage.Format_Grayscale8)
+                                           QtGui.QImage.Format_BGR888)
             
             #self.image_show = QtGui.QImage(self.image_open_display.data, self.image_open_display.shape[1],
             #                               self.image_open_display.shape[0], QtGui.QImage.Format_Grayscale8)
@@ -2103,7 +2126,9 @@ class MainWindow(QtWidgets.QWidget):
             with open('C:/Windows/pwmm.txt', 'r'):
                 pass
         except:
+            print('bhanu',len(self.contours_final),self.num_contours,)
             self.num_contours += randint(0, 9)
+            print('bhanu',len(self.contours_final),self.num_contours,)
 
         try:
             # Obtain Seed Average Parameters
@@ -3705,6 +3730,12 @@ class Record(QtWidgets.QWidget):
             self.mode_table.removeRows(0, self.len_tableView)
             rmtree("%s/result" % path_icon)
             mkdir("%s/result" % path_icon)
+def showimg(im):
+    cv2.namedWindow('a', cv2.WINDOW_NORMAL)  # Create a resizable window
+    cv2.resizeWindow('a', im.shape[1], im.shape[0])  # Resize to the image dimensions
+    cv2.imshow('a', im)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 class Record_detail(QtWidgets.QWidget):
     def __init__(self, width_window, height_window, name_open, win_X, win_Y, ratio_Window, parent = None):

@@ -1980,8 +1980,9 @@ class MainWindow(QtWidgets.QWidget):
                 self.list_normal = []
                 self.list_abnormal = []
                 self.contours_final, _, self.list_ratioArea_final, self.list_grainArea_final = self.findratioarea(binary_seg)
-
+                self.contours_final = listt(self.contours_final)
                 for i in range(len(contours_loss)):
+                    #print('bharath')
                     self.contours_final.append(contours_loss[i])
                     self.list_ratioArea_final.append(list_ratioArea_loss[i])
                     self.list_grainArea_final.append(list_grainArea_loss[i])
