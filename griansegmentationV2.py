@@ -2035,12 +2035,13 @@ class MainWindow(QtWidgets.QWidget):
 
                     if self.list_ratioArea_final[i] >= 0.85 and self.list_grainArea_final[i] <= 1.8 * np.mean(self.list_grainArea_final) \
                             and self.list_grainArea_final[i] >= 0.5 * np.mean(self.list_grainArea_final):
-                        cv2.drawContours(self.image_contour, [self.contours_final[i]], -1, (0, 255, 0), 3)
+                        cv2.drawContours(self.image_contour, [self.contours_final[i]], -1, (255, 0,0 ), 1)
                         self.list_normal.append(i)
                     else:
-                        cv2.drawContours(self.image_contour, [self.contours_final[i]], -1, (255, 0, 255), 3)
+                        cv2.drawContours(self.image_contour, [self.contours_final[i]], -1, (255, 0, 0), 1)
                         self.list_abnormal.append(i)
-                print(2019)
+                #cv2.imwrite(self.imageName[:-4]+'.jpg', self.image_contour)                
+                print(2019,self.imageName[:-4])
                 if len(self.contours_final) == 1:
                     self.area_calibration_pixel = max(list_area_calibration_pixel)
                     self.area_calibration_true = self.area_calibration_pixel * self.ratio
@@ -2127,7 +2128,7 @@ class MainWindow(QtWidgets.QWidget):
                 pass
         except:
             print('bhanu',len(self.contours_final),self.num_contours,)
-            self.num_contours += randint(0, 9)
+            #self.num_contours += randint(0, 9)
             print('bhanu',len(self.contours_final),self.num_contours,)
 
         try:
